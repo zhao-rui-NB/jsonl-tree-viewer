@@ -6,7 +6,7 @@ import sys
 from dataclasses import dataclass
 
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
-from PyQt6.QtGui import QFont, QIntValidator
+from PyQt6.QtGui import QFont, QIcon, QIntValidator
 from PyQt6.QtWidgets import (
     QApplication,
     QCheckBox,
@@ -258,6 +258,10 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("JSONL Tree Viewer")
         self.resize(1200, 800)
+        self.setAcceptDrops(True)
+        icon_path = os.path.join(os.path.dirname(__file__), "assets", "app_icon.svg")
+        if os.path.exists(icon_path):
+            self.setWindowIcon(QIcon(icon_path))
         self.index: JsonlIndex | None = None
         self.current_line = 0
         self.full_line_text = ""
@@ -395,6 +399,28 @@ class MainWindow(QMainWindow):
 
         self.index_worker = None
         self.search_worker = None
+
+    def dragEnterEvent(self, event) -> None:
+        if event.mimeData().hasUrls():
+            urls = event.mimeData().urls()
+            if urls:
+                path = urls[0].toLocalFile()
+                if path and os.path.isfile(path):
+                    event.acceptProposedAction()
+                    return
+        event.ignore()
+
+    def dropEvent(self, event) -> None:
+        if not event.mimeData().hasUrls():
+            event.ignore()
+            return
+        for url in event.mimeData().urls():
+            path = url.toLocalFile()
+            if path and os.path.isfile(path):
+                self.load_file(path)
+                event.acceptProposedAction()
+                return
+        event.ignore()
 
     def open_file(self) -> None:
         path, _ = QFileDialog.getOpenFileName(

@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+*.pyo
+*.egg-info/
+*.egg
+.venv/
+env/
+venv/
+
+# PyInstaller
+build/
+dist/
+*.spec
+
+# App artifacts
+*.idx
+*.idx.meta
+
+# Logs
+*.log
+
+# OS
+Thumbs.db
+Desktop.ini
