@@ -3,6 +3,7 @@ import mmap
 import os
 import struct
 import sys
+from collections import OrderedDict
 from dataclasses import dataclass
 
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
@@ -21,6 +22,7 @@ from PyQt6.QtWidgets import (
     QPushButton,
     QPlainTextEdit,
     QProgressBar,
+    QHeaderView,
     QSplitter,
     QTabWidget,
     QTreeWidget,
@@ -307,6 +309,9 @@ class MainWindow(QMainWindow):
 
         self.tree = QTreeWidget()
         self.tree.setHeaderLabels(["Key", "Value"])
+        self.tree.header().setSectionResizeMode(0, QHeaderView.ResizeMode.Interactive)
+        self.tree.header().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
+        self.tree.setColumnWidth(0, 280)
         self.tree.itemExpanded.connect(self.expand_item)
         self.tree.itemSelectionChanged.connect(self.update_preview_from_selection)
 
@@ -570,7 +575,7 @@ class MainWindow(QMainWindow):
         if not text.strip():
             return None
         try:
-            data = json.loads(text)
+            data = json.loads(text, object_pairs_hook=OrderedDict)
         except json.JSONDecodeError as exc:
             root = QTreeWidgetItem(["<invalid JSON>", str(exc)])
             self.tree.addTopLevelItem(root)
@@ -654,7 +659,7 @@ class MainWindow(QMainWindow):
             if self.current_is_line:
                 if self.preview_json.isChecked():
                     try:
-                        parsed = json.loads(self.full_line_text)
+                        parsed = json.loads(self.full_line_text, object_pairs_hook=OrderedDict)
                         text = json.dumps(parsed, ensure_ascii=False, indent=2)
                     except json.JSONDecodeError:
                         text = self.full_line_text
